@@ -1,258 +1,233 @@
-import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ExternalLink, Github, Layers, ShieldCheck, Sparkles } from 'lucide-react';
+import { Search, ArrowRight, Heart, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { mediaItems } from '../../data/tontoninDong';
+import { useContinueWatching } from '../../hooks/useContinueWatching';
+import { useMediaWatchlist } from '../../hooks/useMediaWatchlist';
+
+const modes = ['All', 'Anime', 'Movie', 'TV'] as const;
 
 function TontoninDong() {
+  const [mode, setMode] = useState<typeof modes[number]>('All');
+  const [search, setSearch] = useState('');
+  const [heroIndex, setHeroIndex] = useState(0);
+  const { watchlist, toggleWatchlist, isInWatchlist } = useMediaWatchlist();
+  const { progressList } = useContinueWatching();
+
+  const heroItems = mediaItems.slice(0, 3);
+  const featured = heroItems[heroIndex];
+
+  const filteredItems = useMemo(() => {
+    return mediaItems.filter((item) => {
+      const typeMatch = mode === 'All' || item.type === mode.toLowerCase();
+      const searchMatch = [item.title, ...item.genre].some((value) =>
+        value.toLowerCase().includes(search.toLowerCase())
+      );
+      return typeMatch && searchMatch;
+    });
+  }, [mode, search]);
+
+  const continueItems = progressList
+    .map((progress) => mediaItems.find((item) => item.id === progress.mediaId))
+    .filter(Boolean) as typeof mediaItems;
+
   return (
-    <main className="relative overflow-hidden py-16 text-text">
-      <div className="absolute inset-x-0 top-0 h-72 bg-gradient-to-b from-[#071020] via-transparent to-transparent" />
+    <main className="relative overflow-hidden pb-24 pt-28 bg-[#050b14] text-text">
+      <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_top,_rgba(88,166,255,0.15),_transparent_35%)]" />
       <div className="mx-auto max-w-7xl px-4">
-        <section className="rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div className="grid gap-10 lg:grid-cols-[0.9fr_0.7fr] lg:items-center">
-            <div>
-              <p className="text-sm uppercase tracking-[0.28em] text-accent">MEDIA CATALOG PROJECT</p>
-              <h1 className="mt-4 text-5xl font-semibold tracking-tight text-white">TontoninDong</h1>
-              <p className="mt-3 text-xl text-muted">Anime, Film, dan TV Series dalam satu web app.</p>
-              <p className="mt-6 max-w-2xl leading-8 text-muted">
-                TontoninDong adalah konsep media catalog web app yang dirancang untuk mengeksplorasi integrasi API open-source, pencarian konten, watchlist lokal, continue watching, dan pengalaman menonton berbasis web secara terstruktur.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {['API Integration', 'Local Watchlist', 'Continue Watching', 'Concept Project'].map((label) => (
-                  <span key={label} className="rounded-full border border-white/10 bg-[#09131e] px-4 py-2 text-sm text-text">
-                    {label}
-                  </span>
+        <section className="rounded-[32px] border border-white/10 bg-[#0b1624]/95 p-8 shadow-glow backdrop-blur-xl">
+          <p className="text-sm uppercase tracking-[0.32em] text-accent">TONTONINDONG</p>
+          <h1 className="mt-4 text-4xl font-semibold text-white">Anime, Film, dan TV Series dalam satu katalog.</h1>
+          <p className="mt-4 max-w-3xl leading-8 text-muted">
+            Jelajahi katalog media, simpan watchlist, dan lanjutkan tontonan langsung dari browser.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            {['Anime', 'Film', 'TV Series', 'Local Watchlist', 'Continue Watching'].map((label) => (
+              <span key={label} className="rounded-full bg-[#08131f] px-4 py-2 text-sm text-text/80">
+                {label}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-6 lg:grid-cols-[1fr_0.92fr]">
+          <div className="rounded-[32px] border border-white/10 bg-[#0b1624]/95 p-6 shadow-glow backdrop-blur-xl">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2">
+                {modes.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setMode(item)}
+                    className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                      mode === item ? 'bg-primary text-white' : 'bg-[#08131f] text-muted hover:bg-white/5'
+                    }`}
+                  >
+                    {item}
+                  </button>
                 ))}
               </div>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <Link
-                  to="/dashboard"
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f77cf]"
-                >
-                  Back to Dashboard <ArrowRight size={16} />
-                </Link>
-                <Link
-                  to="/project/tontonin-dong"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#08121d] px-5 py-3 text-sm font-semibold text-text hover:border-accent"
-                >
-                  View Project Detail <ExternalLink size={16} />
-                </Link>
+              <div className="relative w-full sm:w-[320px]">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <input
+                  type="text"
+                  placeholder="Cari anime, film, atau TV series..."
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  className="w-full rounded-full border border-white/10 bg-[#08131f] py-3 pl-12 pr-4 text-sm text-text outline-none placeholder:text-muted"
+                />
               </div>
             </div>
-            <div className="rounded-[28px] border border-white/10 bg-[#08131f]/90 p-8">
-              <p className="text-sm uppercase tracking-[0.28em] text-accent">Concept Brief</p>
-              <div className="mt-6 space-y-4 text-muted">
-                <p>
-                  TontoninDong adalah contoh media catalog modern dengan tampilan dark night-sky yang memadukan anime, film, dan TV series dalam satu platform terpadu.
-                </p>
-                <p>
-                  Fokus utamanya adalah integrasi open-source API atau mock API sesuai lisensi, state management lokal, routing, responsive interface, dan player demo yang masuk akal untuk portfolio.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Overview</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Media catalog modern dengan pengalaman terpadu</h2>
-            <p className="mt-4 leading-8 text-muted">
-              Proyek ini terinspirasi oleh katalog media modern dengan pendekatan dark night-sky. Arsitektur fokus pada API wrapper, routing, state management, localStorage, player state, dan responsive interface agar pengalaman eksplorasi terasa konsisten.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              'UI/UX dark night-sky',
-              'API wrapper',
-              'Routing',
-              'State management',
-              'localStorage',
-              'Player state',
-              'Responsive interface'
-            ].map((item) => (
-              <div key={item} className="rounded-3xl border border-white/10 bg-[#08121d] p-6 text-muted">
-                {item}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-10 space-y-8 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Features</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Fitur utama TontoninDong</h2>
-          </div>
-
-          <div className="grid gap-8 lg:grid-cols-3">
-            <div className="rounded-3xl border border-white/10 bg-[#08121d] p-6">
-              <h3 className="text-xl font-semibold text-white">Anime Mode</h3>
-              <ul className="mt-4 space-y-3 text-muted">
-                <li>Homepage dengan carousel ongoing/latest</li>
-                <li>Browse berdasarkan genre dan status</li>
-                <li>Search judul anime</li>
-                <li>Detail page berisi poster, metadata, sinopsis, genre, dan episode list</li>
-                <li>Watch history berbasis localStorage</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-[#08121d] p-6">
-              <h3 className="text-xl font-semibold text-white">Movie & TV Mode</h3>
-              <ul className="mt-4 space-y-3 text-muted">
-                <li>Hero banner carousel</li>
-                <li>Trending content</li>
-                <li>Browse dengan filter genre, tahun, negara, dan sort</li>
-                <li>Search autocomplete</li>
-                <li>Detail page berisi poster, rating, sinopsis, cast, genre, season, dan episode</li>
-                <li>Continue watching</li>
-              </ul>
-            </div>
-            <div className="rounded-3xl border border-white/10 bg-[#08121d] p-6">
-              <h3 className="text-xl font-semibold text-white">Shared Features</h3>
-              <ul className="mt-4 space-y-3 text-muted">
-                <li>Watchlist terpadu</li>
-                <li>Continue Watching</li>
-                <li>Mode switcher Anime | Film</li>
-                <li>Context-aware search</li>
-                <li>Responsive mobile/desktop</li>
-                <li>Dark night-sky theme</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Technology</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Tech stack</h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {['React', 'Vite', 'TypeScript', 'Tailwind CSS', 'React Router DOM', 'Framer Motion', 'Lucide React', 'localStorage', 'Vercel', 'API Wrapper'].map((tech) => (
-              <div key={tech} className="rounded-3xl border border-white/10 bg-[#08121d] px-5 py-4 text-muted">
-                <div className="inline-flex items-center gap-2 text-sm font-semibold text-white">
-                  <Layers size={16} className="text-primary" /> {tech}
+            <div className="mt-8 rounded-[32px] border border-white/10 bg-[#08131f]/95 p-6 shadow-glow backdrop-blur-xl">
+              <div className="relative overflow-hidden rounded-[28px] bg-black/50">
+                <img src={featured.backdrop} alt={featured.title} className="h-72 w-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050b14]/95 via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <p className="text-sm uppercase tracking-[0.3em] text-accent">Featured</p>
+                  <h2 className="mt-3 text-3xl font-semibold text-white">{featured.title}</h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-text/80">{featured.description}</p>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <span className="rounded-full bg-primary/20 px-3 py-1 text-xs text-primary">Rating {featured.rating}</span>
+                    {featured.genre.map((genre) => (
+                      <span key={genre} className="rounded-full bg-white/10 px-3 py-1 text-xs text-muted">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <Link
+                      to={`/tontonin-dong/watch/${featured.id}`}
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white"
+                    >
+                      <Play size={16} /> Watch Now
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => toggleWatchlist(featured.id)}
+                      className="inline-flex items-center gap-2 rounded-full bg-[#08131f] px-5 py-3 text-sm font-semibold text-text"
+                    >
+                      <Heart size={16} className={isInWatchlist(featured.id) ? 'text-red-400' : 'text-text'} />
+                      {isInWatchlist(featured.id) ? 'Remove Watchlist' : 'Add Watchlist'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Architecture</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Arsitektur data dan state</h2>
-          </div>
-          <pre className="rounded-3xl border border-white/10 bg-[#07101e] p-6 text-sm text-muted">
-{`Open-source API / Mock API
-        ↓
-API Wrapper
-        ↓
-Data Transformer
-        ↓
-React Components
-        ↓
-Client State + localStorage
-        ↓
-Browser UI`}
-          </pre>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              'API key tidak disimpan langsung di browser jika API bersifat private.',
-              'Untuk production, API private harus dipanggil lewat server/proxy.',
-              'localStorage digunakan untuk watchlist, history, dan continue watching.',
-              'Konten video mengikuti lisensi dan Terms of Service sumber terkait.'
-            ].map((note) => (
-              <div key={note} className="rounded-3xl border border-white/10 bg-[#08121d] p-6 text-muted">
-                <p>{note}</p>
+              <div className="mt-4 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setHeroIndex((current) => (current - 1 + heroItems.length) % heroItems.length)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#08131f] text-text"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setHeroIndex((current) => (current + 1) % heroItems.length)}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#08131f] text-text"
+                >
+                  <ChevronRight size={18} />
+                </button>
               </div>
+            </div>
+          </div>
+
+          <aside className="space-y-6">
+            <div className="rounded-[32px] border border-white/10 bg-[#0b1624]/95 p-6 shadow-glow backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.28em] text-accent">Continue Watching</p>
+              {continueItems.length ? (
+                <div className="mt-5 space-y-4">
+                  {continueItems.map((item) => (
+                    <div key={item.id} className="rounded-[24px] border border-white/10 bg-[#08131f] p-4">
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <p className="font-semibold text-white">{item.title}</p>
+                          <p className="text-sm text-muted">{item.type.toUpperCase()}</p>
+                        </div>
+                        <Link
+                          to={`/tontonin-dong/watch/${item.id}`}
+                          className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white"
+                        >
+                          Continue
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-5 text-muted">Belum ada tontonan yang dilanjutkan.</p>
+              )}
+            </div>
+            <div className="rounded-[32px] border border-white/10 bg-[#0b1624]/95 p-6 shadow-glow backdrop-blur-xl">
+              <p className="text-sm uppercase tracking-[0.28em] text-accent">Watchlist</p>
+              {watchlist.length ? (
+                <div className="mt-5 space-y-4">
+                  {watchlist
+                    .map((watchId) => mediaItems.find((item) => item.id === watchId))
+                    .filter(Boolean)
+                    .map((item) => (
+                      <div key={item!.id} className="rounded-[24px] border border-white/10 bg-[#08131f] p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-white">{item!.title}</p>
+                            <p className="text-sm text-muted">{item!.type.toUpperCase()}</p>
+                          </div>
+                          <Link
+                            to={`/tontonin-dong/watch/${item!.id}`}
+                            className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white"
+                          >
+                            Watch
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="mt-5 text-muted">Watchlist masih kosong.</p>
+              )}
+            </div>
+          </aside>
+        </section>
+
+        <section className="mt-10 space-y-6">
+          <div className="grid gap-6 lg:grid-cols-2">
+            {filteredItems.map((item) => (
+              <article key={item.id} className="rounded-[28px] border border-white/10 bg-[#08131f] p-5 transition hover:-translate-y-1">
+                <div className="grid gap-4 sm:grid-cols-[120px_1fr]">
+                  <img src={item.poster} alt={item.title} className="h-28 w-full rounded-3xl object-cover sm:h-32" />
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#112540] px-3 py-1 text-xs uppercase tracking-[0.24em] text-accent">{item.type}</span>
+                      <span className="text-sm text-muted">{item.year}</span>
+                      <span className="text-sm text-muted">Rating {item.rating}</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white">{item.title}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {item.genre.map((genre) => (
+                        <span key={genre} className="rounded-full bg-white/5 px-3 py-1 text-xs text-muted">{genre}</span>
+                      ))}
+                    </div>
+                    <p className="text-sm leading-6 text-muted line-clamp-3">{item.description}</p>
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        to={`/tontonin-dong/watch/${item.id}`}
+                        className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white"
+                      >
+                        Watch
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => toggleWatchlist(item.id)}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#08131f] px-4 py-2 text-sm font-semibold text-text"
+                      >
+                        <Heart size={16} className={isInWatchlist(item.id) ? 'text-red-400' : 'text-text'} />
+                        {isInWatchlist(item.id) ? 'Remove' : 'Watchlist'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
             ))}
-          </div>
-        </section>
-
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Environment Variables</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Contoh konfigurasi env</h2>
-          </div>
-          <pre className="rounded-3xl border border-white/10 bg-[#07101e] p-6 text-sm text-muted">
-{`VITE_MEDIA_API_BASE_URL=https://example-api.local
-VITE_PUBLIC_DEMO_MODE=true`}
-          </pre>
-          <p className="text-muted">
-            Untuk versi portfolio, project dapat berjalan dengan mock data. Jika menggunakan API eksternal, pastikan API tersebut legal, open-source, atau memiliki izin penggunaan yang jelas.
-          </p>
-        </section>
-
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Project Structure</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Struktur proyek</h2>
-          </div>
-          <pre className="rounded-3xl border border-white/10 bg-[#07101e] p-6 text-sm text-muted">
-{`src/
-  pages/
-    TontoninDong/
-      index.tsx
-  components/
-    media/
-      MediaCard.tsx
-      HeroCarousel.tsx
-      WatchlistPanel.tsx
-      ContinueWatching.tsx
-  data/
-    tontoninDong.ts
-  hooks/
-    useLocalWatchlist.ts
-    useContinueWatching.ts
-  lib/
-    mediaApi.ts
-  types/
-    media.ts`}
-          </pre>
-        </section>
-
-        <section className="mt-10 space-y-6 rounded-[32px] border border-white/10 bg-surface/95 p-8 shadow-glow backdrop-blur-xl">
-          <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-accent">Legal & License Note</p>
-            <h2 className="mt-4 text-3xl font-semibold text-white">Catatan hukum dan lisensi</h2>
-          </div>
-          <p className="leading-7 text-muted">
-            Project ini dibuat untuk eksplorasi teknis dan portfolio. Penggunaan API, metadata, video, subtitle, streaming, dan download harus mengikuti lisensi, hak cipta, serta Terms of Service sumber terkait. Open-source API tidak otomatis berarti semua konten media bebas didistribusikan.
-          </p>
-          <p className="leading-7 text-muted">
-            TontoninDong menggunakan open-source API atau mock API sesuai lisensi dan Terms of Service sumber data. Ini bukan representasi layanan streaming ilegal atau situs bajakan.
-          </p>
-        </section>
-
-        <section className="mt-10 rounded-[32px] border border-white/10 bg-[#08131f]/95 p-8 shadow-glow backdrop-blur-xl">
-          <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-            <div>
-              <p className="text-sm uppercase tracking-[0.28em] text-accent">Call to Action</p>
-              <h2 className="mt-4 text-3xl font-semibold text-white">Lihat detail, eksplorasi, atau cek repository</h2>
-              <p className="mt-4 text-muted">
-                Karena project menggunakan HashRouter, URL akhir akan berbentuk https://portfolio-web-pez9.vercel.app/#/tontonin-dong. Semua navigasi internal menggunakan route React.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f77cf]"
-              >
-                Back to Dashboard
-              </Link>
-              <Link
-                to="/project/tontonin-dong"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#08121d] px-5 py-3 text-sm font-semibold text-text hover:border-accent"
-              >
-                Project Detail
-              </Link>
-              <a
-                href="https://github.com/Levii90/portfolio-web"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#08121d] px-5 py-3 text-sm font-semibold text-text hover:border-accent"
-              >
-                <Github size={16} /> GitHub Repository
-              </a>
-            </div>
           </div>
         </section>
       </div>

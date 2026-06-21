@@ -6,6 +6,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import TontoninDong from './pages/TontoninDong';
+import TontoninDongWatch from './pages/TontoninDong/Watch';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="project/:id" element={<ProjectDetail />} />
         <Route path="tontonin-dong" element={<TontoninDong />} />
+        <Route path="tontonin-dong/watch/:id" element={<TontoninDongWatch />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
       </Route>
