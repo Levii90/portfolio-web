@@ -8,7 +8,9 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project }: ProjectCardProps) {
-  const hasLiveDemo = project.liveUrl && project.liveUrl !== '#';
+  const hasLiveDemo = Boolean(project.liveUrl && project.liveUrl !== '#');
+  const isInternalHashRoute = project.liveUrl?.startsWith('/#/');
+  const isExternalLink = project.liveUrl?.startsWith('http');
   const hasGithub = project.githubUrl && project.githubUrl !== '#';
 
   return (
@@ -43,14 +45,23 @@ function ProjectCard({ project }: ProjectCardProps) {
           </span>
           <div className="flex gap-2">
             {hasLiveDemo ? (
-              <a
-                href={project.liveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
-              >
-                Demo
-              </a>
+              isInternalHashRoute ? (
+                <Link
+                  to={project.liveUrl.replace('/#', '')}
+                  className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
+                >
+                  Open Page
+                </Link>
+              ) : (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
+                >
+                  Demo
+                </a>
+              )
             ) : (
               <button
                 type="button"

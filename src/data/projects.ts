@@ -103,7 +103,7 @@ export const projects: Project[] = [
       'Dark night-sky responsive UI'
     ],
     githubUrl: 'https://github.com/Levii90/portfolio-web',
-    liveUrl: '',
+    liveUrl: '/#/tontonin-dong',
     image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80',
     tags: ['React', 'API Integration', 'Media Catalog']
   }
