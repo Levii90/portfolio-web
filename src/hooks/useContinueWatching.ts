@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import type { MediaSource } from '../types/media';
 
 export interface MediaProgress {
   mediaId: string;
-  source: 'moviebox' | 'otakudesu';
+  source: MediaSource;
   currentTime: number;
   duration: number;
   updatedAt: string;
@@ -32,7 +33,7 @@ export function useContinueWatching() {
     }
   }, [progressList]);
 
-  function saveProgress(mediaId: string, source: 'moviebox' | 'otakudesu', currentTime: number, duration: number) {
+  function saveProgress(mediaId: string, source: MediaSource, currentTime: number, duration: number) {
     const percentage = duration ? (currentTime / duration) * 100 : 0;
     if (percentage > 95) {
       removeProgress(mediaId, source);
@@ -57,11 +58,11 @@ export function useContinueWatching() {
     });
   }
 
-  function getProgress(mediaId: string, source: 'moviebox' | 'otakudesu') {
+  function getProgress(mediaId: string, source: MediaSource) {
     return progressList.find((item) => item.mediaId === mediaId && item.source === source);
   }
 
-  function removeProgress(mediaId: string, source: 'moviebox' | 'otakudesu') {
+  function removeProgress(mediaId: string, source: MediaSource) {
     setProgressList((current) => current.filter((item) => !(item.mediaId === mediaId && item.source === source)));
   }
 

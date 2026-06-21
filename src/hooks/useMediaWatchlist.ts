@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
+import type { MediaSource } from '../types/media';
 
 const WATCHLIST_KEY = 'tontonindong_watchlist';
+
+function createWatchlistKey(id: string, source: MediaSource) {
+  return `${source}:${id}`;
+}
 
 export function useMediaWatchlist() {
   const [watchlist, setWatchlist] = useState<string[]>([]);
@@ -24,15 +29,16 @@ export function useMediaWatchlist() {
     }
   }, [watchlist]);
 
-  function toggleWatchlist(id: string) {
+  function toggleWatchlist(id: string, source: MediaSource) {
+    const watchKey = createWatchlistKey(id, source);
     setWatchlist((current) => {
-      const exists = current.includes(id);
-      return exists ? current.filter((item) => item !== id) : [...current, id];
+      const exists = current.includes(watchKey);
+      return exists ? current.filter((item) => item !== watchKey) : [...current, watchKey];
     });
   }
 
-  function isInWatchlist(id: string) {
-    return watchlist.includes(id);
+  function isInWatchlist(id: string, source: MediaSource) {
+    return watchlist.includes(createWatchlistKey(id, source));
   }
 
   return { watchlist, toggleWatchlist, isInWatchlist };

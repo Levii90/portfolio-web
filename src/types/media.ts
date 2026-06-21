@@ -1,4 +1,5 @@
 export type MediaType = 'anime' | 'movie' | 'tv';
+export type MediaSource = 'moviebox' | 'otakudesu';
 
 export interface MediaItem {
   id: string;
@@ -15,5 +16,5 @@ export interface MediaItem {
   backdrop: string;
   description: string;
   videoUrl?: string;
-  source: 'moviebox' | 'otakudesu';
+  source: MediaSource;
 }

@@ -40,7 +40,7 @@ function TontoninDong() {
         setError(
           'API belum aktif atau endpoint belum sesuai. Pastikan API berjalan di localhost:8000 atau env production sudah diatur.'
         );
-        setItems(fallbackMediaItems.map((item) => ({ ...item, source: 'moviebox' } as MediaItem)));
+        setItems(fallbackMediaItems);
         setLatestAnime(fallbackMediaItems.filter((item) => item.type === 'anime').slice(0, 6));
         setMovieProjects(fallbackMediaItems.filter((item) => item.type !== 'anime').slice(0, 6));
       } finally {
@@ -64,11 +64,11 @@ function TontoninDong() {
         const queries: Promise<MediaItem[]>[] = [];
 
         if (mode === 'All' || mode === 'Anime') {
-          queries.push(searchAnime(search).then((list) => list.map((item) => ({ ...item, source: 'otakudesu' } as MediaItem))));
+          queries.push(searchAnime(search));
         }
 
         if (mode === 'All' || mode === 'Movie' || mode === 'TV') {
-          queries.push(searchMovies(search).then((list) => list.map((item) => ({ ...item, source: 'moviebox' } as MediaItem))));
+          queries.push(searchMovies(search));
         }
 
         const results = await Promise.all(queries);
@@ -110,7 +110,14 @@ function TontoninDong() {
     .filter(Boolean) as MediaItem[];
 
   const watchlistItems = watchlist
-    .map((watchId) => items.find((item) => item.id === watchId) ?? fallbackMediaItems.find((item) => item.id === watchId))
+    .map((watchKey) => {
+      const [source, ...idParts] = watchKey.split(':');
+      const id = idParts.join(':');
+      return (
+        items.find((item) => item.source === source && item.id === id) ??
+        fallbackMediaItems.find((item) => item.source === source && item.id === id)
+      );
+    })
     .filter(Boolean) as MediaItem[];
 
   return (
@@ -299,7 +306,7 @@ function TontoninDong() {
 
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {filteredItems.map((item) => (
-              <article key={item.id} className="rounded-[28px] border border-white/10 bg-[#0d1725] p-5 shadow-sm">
+              <article key={`${item.source}-${item.id}`} className="rounded-[28px] border border-white/10 bg-[#0d1725] p-5 shadow-sm">
                 <div className="flex gap-4">
                   <img src={item.poster} alt={item.title} className="h-28 w-20 rounded-3xl object-cover" />
                   <div className="flex-1">
@@ -326,11 +333,11 @@ function TontoninDong() {
                       </Link>
                       <button
                         type="button"
-                        onClick={() => toggleWatchlist(item.id)}
+                        onClick={() => toggleWatchlist(item.id, item.source)}
                         className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#111827] px-4 py-2 text-sm font-semibold text-white"
                       >
-                        <Heart size={16} className={isInWatchlist(item.id) ? 'text-red-400' : 'text-white'} />
-                        {isInWatchlist(item.id) ? 'Remove' : 'Watchlist'}
+                        <Heart size={16} className={isInWatchlist(item.id, item.source) ? 'text-red-400' : 'text-white'} />
+                        {isInWatchlist(item.id, item.source) ? 'Remove' : 'Watchlist'}
                       </button>
                     </div>
                   </div>

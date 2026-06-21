@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
 import { getMovieDetail, getMovieStream, getAnimeDetail, getAnimeStream } from '../../lib/tontoninDongApi';
 import { resolveIframeUrl, resolveStreamUrl } from '../../lib/mediaTransformer';
-import type { MediaItem } from '../../types/media';
+import type { MediaItem, MediaSource } from '../../types/media';
 import { mediaItems as fallbackMediaItems } from '../../data/tontoninDong';
 import { useContinueWatching } from '../../hooks/useContinueWatching';
 import { useMediaWatchlist } from '../../hooks/useMediaWatchlist';
 
+function isMediaSource(value: string | undefined): value is MediaSource {
+  return value === 'moviebox' || value === 'otakudesu';
+}
+
 function TontoninDongWatch() {
-  const { source, id } = useParams<{ source: 'moviebox' | 'otakudesu'; id: string }>();
+  const { source: rawSource, id } = useParams<{ source: string; id: string }>();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { saveProgress, getProgress, removeProgress } = useContinueWatching();
@@ -20,35 +23,46 @@ function TontoninDongWatch() {
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const [iframeUrl, setIframeUrl] = useState<string | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
+  const source = isMediaSource(rawSource) ? rawSource : undefined;
 
   useEffect(() => {
-    if (!source || !id) return;
+    if (!source || !id) {
+      setMedia(null);
+      setError('Sumber media atau ID tidak valid.');
+      setLoading(false);
+      return;
+    }
+
+    const activeSource: MediaSource = source;
+    const mediaId = id;
 
     async function loadMedia() {
       setLoading(true);
       setError(null);
+      setLoaded(false);
       setStreamUrl(undefined);
       setIframeUrl(undefined);
 
-      const decodedId = decodeURIComponent(id);
-      const fallback = fallbackMediaItems.find((item) => item.id === decodedId);
+      const decodedId = decodeURIComponent(mediaId);
+      const fallback = fallbackMediaItems.find((item) => item.id === decodedId && item.source === activeSource);
 
       try {
-        const detail = source === 'moviebox'
+        const detail = activeSource === 'moviebox'
           ? await getMovieDetail(decodedId)
           : await getAnimeDetail(decodedId);
 
-        setMedia({ ...detail, source });
+        setMedia({ ...detail, source: activeSource });
       } catch (err) {
         if (fallback) {
-          setMedia({ ...fallback, source });
+          setMedia(fallback);
         } else {
+          setMedia(null);
           setError('Media tidak ditemukan. Coba kembali ke katalog.');
         }
       }
 
       try {
-        const rawStream = source === 'moviebox'
+        const rawStream = activeSource === 'moviebox'
           ? await getMovieStream(decodedId)
           : await getAnimeStream(decodedId);
 
@@ -78,8 +92,6 @@ function TontoninDongWatch() {
       videoRef.current.currentTime = progress.currentTime;
     }
   }, [loaded, media, progress, streamUrl]);
-
-  const [loaded, setLoaded] = useState(false);
 
   if (loading) {
     return (
@@ -125,16 +137,21 @@ function TontoninDongWatch() {
             </Link>
             <button
               type="button"
-              onClick={() => toggleWatchlist(media.id)}
+              onClick={() => toggleWatchlist(media.id, media.source)}
               className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black"
             >
-              {isInWatchlist(media.id) ? 'Hapus Watchlist' : 'Tambahkan Watchlist'}
+              {isInWatchlist(media.id, media.source) ? 'Hapus Watchlist' : 'Tambahkan Watchlist'}
             </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1180px] px-4 pb-28 pt-8">
+        {error && (
+          <div className="mb-6 rounded-3xl border border-red-400/30 bg-red-500/10 px-5 py-4 text-sm text-red-200">
+            {error}
+          </div>
+        )}
         <div className="grid gap-8 lg:grid-cols-[0.7fr_0.3fr]">
           <div className="space-y-8">
             <section className="rounded-[32px] border border-white/10 bg-[#111827]/95 p-8 shadow-glow">
