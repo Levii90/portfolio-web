@@ -11,6 +11,7 @@ export interface Project {
   features: string[];
   githubUrl: string;
   liveUrl: string;
+  previewPath?: string;
   image: string;
   tags: string[];
 }

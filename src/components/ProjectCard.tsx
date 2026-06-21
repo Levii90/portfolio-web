@@ -8,9 +8,8 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project }: ProjectCardProps) {
+  const hasPreviewPage = Boolean(project.previewPath);
   const hasLiveDemo = Boolean(project.liveUrl && project.liveUrl !== '#');
-  const isInternalHashRoute = project.liveUrl?.startsWith('/#/');
-  const isExternalLink = project.liveUrl?.startsWith('http');
   const hasGithub = project.githubUrl && project.githubUrl !== '#';
 
   return (
@@ -44,24 +43,22 @@ function ProjectCard({ project }: ProjectCardProps) {
             {project.status}
           </span>
           <div className="flex gap-2">
-            {hasLiveDemo ? (
-              isInternalHashRoute ? (
-                <Link
-                  to={project.liveUrl.replace('/#', '')}
-                  className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
-                >
-                  Open Page
-                </Link>
-              ) : (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
-                >
-                  Demo
-                </a>
-              )
+            {hasPreviewPage ? (
+              <Link
+                to={project.previewPath!}
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
+              >
+                Open Page
+              </Link>
+            ) : hasLiveDemo ? (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
+              >
+                Demo
+              </a>
             ) : (
               <button
                 type="button"
