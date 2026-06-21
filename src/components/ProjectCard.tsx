@@ -48,7 +48,7 @@ function ProjectCard({ project }: ProjectCardProps) {
                 to={project.previewPath!}
                 className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
               >
-                Open Page
+                Open App
               </Link>
             ) : hasLiveDemo ? (
               <a

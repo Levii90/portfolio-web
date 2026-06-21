@@ -5,12 +5,14 @@ export interface MediaItem {
   title: string;
   type: MediaType;
   year: number;
+  episode?: string;
+  postedBy?: string;
+  releasedAt?: string;
   genre: string[];
   status: string;
   rating: number;
   poster: string;
   backdrop: string;
   description: string;
-  episodes?: number;
   videoUrl: string;
 }

@@ -15,11 +15,13 @@ function App() {
         <Route index element={<Home />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="project/:id" element={<ProjectDetail />} />
-        <Route path="tontonin-dong" element={<TontoninDong />} />
-        <Route path="tontonin-dong/watch/:id" element={<TontoninDongWatch />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
       </Route>
+
+      <Route path="tontonin-dong" element={<TontoninDong />} />
+      <Route path="tontonin-dong/watch/:id" element={<TontoninDongWatch />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
