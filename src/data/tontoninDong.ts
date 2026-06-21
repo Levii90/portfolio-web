@@ -16,7 +16,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-1/900/500',
     description:
       'Mahasiswa akademi logistik es bertempur untuk menjaga keseimbangan antara sihir, teknologi, dan ancaman gelap dari kutub utara.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'otakudesu'
   },
   {
@@ -34,7 +34,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-2/900/500',
     description:
       'Kisah pejuang masa depan yang menemukan kembali identitasnya di tengah kota neon dengan memori yang terfragmentasi.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'otakudesu'
   },
   {
@@ -52,7 +52,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-3/900/500',
     description:
       'Petualangan luar angkasa tim remaja yang mengejar misteri warisan galaksi dan persahabatan antar planet.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'otakudesu'
   },
   {
@@ -70,7 +70,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-1/900/500',
     description:
       'Ritual kuno memanggil bayangan di antara gedung-gedung futuristik saat sekelompok remaja mencoba mengungkap kebenaran tersembunyi.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'otakudesu'
   },
   {
@@ -86,7 +86,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-2/900/500',
     description:
       'Seorang detektif malam mengejar jejak kasus hilangnya ilmuwan dalam kota yang tak pernah tidur.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -102,7 +102,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-3/900/500',
     description:
       'Sebuah perjalanan emosional tentang dua orang yang menemukan ketenangan di sepanjang sungai penuh rahasia.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -118,7 +118,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-1/900/500',
     description:
       'Mencari melodi legendaris yang konon bisa membuka dimensi bayangan dalam orkestra magis.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -136,7 +136,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-2/900/500',
     description:
       'Serial Sci-Fi tentang tim penjelajah waktu yang menghadapi jejak masa lalu dan masa depan yang saling tumpang tindih.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -154,7 +154,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-3/900/500',
     description:
       'Investigasi kriminal di kota hujan yang dipenuhi konspirasi dan rahasia gelap.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -172,7 +172,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-1/900/500',
     description:
       'Para pembalap jalanan cyberpunk berjuang menjaga identitas mereka di bawah langit neon metropolis.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'otakudesu'
   },
   {
@@ -188,7 +188,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-2/900/500',
     description:
       'Sekelompok anak-anak memulai ekspedisi ke pulau kristal untuk mengungkap rahasia legenda yang terlupakan.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   },
   {
@@ -206,7 +206,7 @@ export const mediaItems: MediaItem[] = [
     backdrop: 'https://picsum.photos/seed/backdrop-3/900/500',
     description:
       'Grup paduan suara sekolah menghadapi tekanan kompetisi sambil menjaga persahabatan mereka tetap terang.',
-    videoUrl: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4',
+    videoUrl: '/media/demo-reel.mp4',
     source: 'moviebox'
   }
 ];

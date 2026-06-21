@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Menu, X, ExternalLink } from 'lucide-react';
-import brandAvatar from '../assets/WhatsApp Image 2026-06-21 at 19.20.26.jpeg';
 
 const navLinks = [
   { label: 'Home', href: '/' },
@@ -20,7 +19,7 @@ function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         <Link to="/" className="flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.24em] text-accent">
           <span className="inline-flex h-10 w-10 overflow-hidden rounded-2xl border border-white/10 bg-[#112039]">
-            <img src={brandAvatar} alt="0xp1et Lab avatar" className="h-full w-full object-cover object-top" />
+            <img src="/brand-avatar.jpeg" alt="0xp1et Lab avatar" className="h-full w-full object-cover object-top" />
           </span>
           <span>0xp1et Lab</span>
         </Link>
@@ -40,12 +39,12 @@ function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <a
-            href="/dashboard"
+          <Link
+            to="/dashboard"
             className="inline-flex items-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-white shadow-glow hover:bg-[#0f77cb]"
           >
             View Portfolio
-          </a>
+          </Link>
         </div>
 
         <button
@@ -71,12 +70,13 @@ function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
-              href="/dashboard"
+            <Link
+              to="/dashboard"
+              onClick={() => setOpen(false)}
               className="inline-flex items-center justify-center rounded-full bg-primary px-4 py-3 text-sm font-semibold text-white"
             >
               View Portfolio <ExternalLink className="ml-2" size={16} />
-            </a>
+            </Link>
           </div>
         </div>
       )}

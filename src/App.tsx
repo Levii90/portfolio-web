@@ -20,6 +20,7 @@ function App() {
       </Route>
 
       <Route path="tontonin-dong" element={<TontoninDong />} />
+      <Route path="tontonin-dong/watch/:id" element={<TontoninDongWatch />} />
       <Route path="tontonin-dong/watch/:source/:id" element={<TontoninDongWatch />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />

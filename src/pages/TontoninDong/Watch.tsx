@@ -23,10 +23,15 @@ function TontoninDongWatch() {
   const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
   const [iframeUrl, setIframeUrl] = useState<string | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
-  const source = isMediaSource(rawSource) ? rawSource : undefined;
+  const hasValidSource = isMediaSource(rawSource);
+  const resolvedId = id ?? (!hasValidSource ? rawSource : undefined);
+  const fallbackSource = resolvedId
+    ? fallbackMediaItems.find((item) => item.id === decodeURIComponent(resolvedId))?.source
+    : undefined;
+  const source = hasValidSource ? rawSource : fallbackSource;
 
   useEffect(() => {
-    if (!source || !id) {
+    if (!source || !resolvedId) {
       setMedia(null);
       setError('Sumber media atau ID tidak valid.');
       setLoading(false);
@@ -34,7 +39,7 @@ function TontoninDongWatch() {
     }
 
     const activeSource: MediaSource = source;
-    const mediaId = id;
+    const mediaId = resolvedId;
 
     async function loadMedia() {
       setLoading(true);
@@ -73,16 +78,18 @@ function TontoninDongWatch() {
           } else {
             setStreamUrl(resolved);
           }
+        } else if (fallback?.videoUrl) {
+          setStreamUrl(fallback.videoUrl);
         }
       } catch {
-        // ignore stream fetch errors; use any available videoUrl from media detail
+        setStreamUrl((current) => current ?? fallback?.videoUrl);
       } finally {
         setLoading(false);
       }
     }
 
     void loadMedia();
-  }, [source, id]);
+  }, [source, resolvedId]);
 
   const progress = media ? getProgress(media.id, media.source) : undefined;
 
@@ -172,9 +179,15 @@ function TontoninDongWatch() {
                 <video
                   ref={videoRef}
                   controls
+                  preload="metadata"
                   poster={media.backdrop}
-                  className="h-[420px] w-full rounded-[28px] bg-black object-cover"
+                  className="h-[420px] w-full rounded-[28px] bg-black object-contain"
                   src={streamUrl}
+                  onError={() => {
+                    if (media.videoUrl && streamUrl !== media.videoUrl) {
+                      setStreamUrl(media.videoUrl);
+                    }
+                  }}
                   onLoadedMetadata={() => setLoaded(true)}
                   onTimeUpdate={(event) => {
                     const target = event.currentTarget;
