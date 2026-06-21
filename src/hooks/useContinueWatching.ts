@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 export interface MediaProgress {
   mediaId: string;
+  source: 'moviebox' | 'otakudesu';
   currentTime: number;
   duration: number;
   updatedAt: string;
@@ -31,34 +32,37 @@ export function useContinueWatching() {
     }
   }, [progressList]);
 
-  function saveProgress(mediaId: string, currentTime: number, duration: number) {
+  function saveProgress(mediaId: string, source: 'moviebox' | 'otakudesu', currentTime: number, duration: number) {
     const percentage = duration ? (currentTime / duration) * 100 : 0;
     if (percentage > 95) {
-      removeProgress(mediaId);
+      removeProgress(mediaId, source);
       return;
     }
 
     setProgressList((current) => {
-      const existing = current.find((item) => item.mediaId === mediaId);
-      const next = {
+      const next: MediaProgress = {
         mediaId,
+        source,
         currentTime,
         duration,
         updatedAt: new Date().toISOString()
       };
-      if (existing) {
-        return current.map((item) => (item.mediaId === mediaId ? next : item));
+      const exists = current.find((item) => item.mediaId === mediaId && item.source === source);
+      if (exists) {
+        return current.map((item) =>
+          item.mediaId === mediaId && item.source === source ? next : item
+        );
       }
       return [...current, next];
     });
   }
 
-  function getProgress(mediaId: string) {
-    return progressList.find((item) => item.mediaId === mediaId);
+  function getProgress(mediaId: string, source: 'moviebox' | 'otakudesu') {
+    return progressList.find((item) => item.mediaId === mediaId && item.source === source);
   }
 
-  function removeProgress(mediaId: string) {
-    setProgressList((current) => current.filter((item) => item.mediaId !== mediaId));
+  function removeProgress(mediaId: string, source: 'moviebox' | 'otakudesu') {
+    setProgressList((current) => current.filter((item) => !(item.mediaId === mediaId && item.source === source)));
   }
 
   return { progressList, saveProgress, getProgress, removeProgress };

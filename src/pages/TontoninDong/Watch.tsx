@@ -1,27 +1,94 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
-import { mediaItems } from '../../data/tontoninDong';
+import { getMovieDetail, getMovieStream, getAnimeDetail, getAnimeStream } from '../../lib/tontoninDongApi';
+import { resolveIframeUrl, resolveStreamUrl } from '../../lib/mediaTransformer';
+import type { MediaItem } from '../../types/media';
+import { mediaItems as fallbackMediaItems } from '../../data/tontoninDong';
 import { useContinueWatching } from '../../hooks/useContinueWatching';
 import { useMediaWatchlist } from '../../hooks/useMediaWatchlist';
 
 function TontoninDongWatch() {
-  const { id } = useParams();
+  const { source, id } = useParams<{ source: 'moviebox' | 'otakudesu'; id: string }>();
   const navigate = useNavigate();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const { saveProgress, getProgress, removeProgress } = useContinueWatching();
   const { toggleWatchlist, isInWatchlist } = useMediaWatchlist();
+  const [media, setMedia] = useState<MediaItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+  const [iframeUrl, setIframeUrl] = useState<string | undefined>(undefined);
   const [loaded, setLoaded] = useState(false);
 
-  const media = useMemo(() => mediaItems.find((item) => item.id === id), [id]);
-  const progress = useMemo(() => (media ? getProgress(media.id) : undefined), [getProgress, media]);
+  useEffect(() => {
+    if (!source || !id) return;
+
+    async function loadMedia() {
+      setLoading(true);
+      setError(null);
+      setStreamUrl(undefined);
+      setIframeUrl(undefined);
+
+      const decodedId = decodeURIComponent(id);
+      const fallback = fallbackMediaItems.find((item) => item.id === decodedId);
+
+      try {
+        const detail = source === 'moviebox'
+          ? await getMovieDetail(decodedId)
+          : await getAnimeDetail(decodedId);
+
+        setMedia({ ...detail, source });
+      } catch (err) {
+        if (fallback) {
+          setMedia({ ...fallback, source });
+        } else {
+          setError('Media tidak ditemukan. Coba kembali ke katalog.');
+        }
+      }
+
+      try {
+        const rawStream = source === 'moviebox'
+          ? await getMovieStream(decodedId)
+          : await getAnimeStream(decodedId);
+
+        const resolved = resolveStreamUrl(rawStream) || resolveIframeUrl(rawStream);
+        if (typeof resolved === 'string') {
+          if (resolved.includes('iframe') || resolved.startsWith('<iframe')) {
+            setIframeUrl(resolved);
+          } else {
+            setStreamUrl(resolved);
+          }
+        }
+      } catch {
+        // ignore stream fetch errors; use any available videoUrl from media detail
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void loadMedia();
+  }, [source, id]);
+
+  const progress = media ? getProgress(media.id, media.source) : undefined;
 
   useEffect(() => {
-    if (!media || !videoRef.current || !loaded) return;
+    if (!media || !videoRef.current || !streamUrl) return;
     if (progress) {
       videoRef.current.currentTime = progress.currentTime;
     }
-  }, [loaded, media, progress]);
+  }, [loaded, media, progress, streamUrl]);
+
+  const [loaded, setLoaded] = useState(false);
+
+  if (loading) {
+    return (
+      <section className="mx-auto max-w-5xl px-4 py-24 text-center text-white">
+        <h2 className="text-3xl font-semibold">Memuat media...</h2>
+        <p className="mt-4 text-muted">Tunggu sebentar sementara konten disiapkan.</p>
+      </section>
+    );
+  }
 
   if (!media) {
     return (
@@ -84,19 +151,34 @@ function TontoninDongWatch() {
             </section>
 
             <section className="rounded-[32px] border border-white/10 bg-[#111827]/95 p-6 shadow-glow">
-              <video
-                ref={videoRef}
-                controls
-                poster={media.backdrop}
-                className="h-[420px] w-full rounded-[28px] bg-black object-cover"
-                src={media.videoUrl}
-                onLoadedMetadata={() => setLoaded(true)}
-                onTimeUpdate={(event) => {
-                  const target = event.currentTarget;
-                  saveProgress(media.id, target.currentTime, target.duration);
-                }}
-                onEnded={() => removeProgress(media.id)}
-              />
+              {streamUrl ? (
+                <video
+                  ref={videoRef}
+                  controls
+                  poster={media.backdrop}
+                  className="h-[420px] w-full rounded-[28px] bg-black object-cover"
+                  src={streamUrl}
+                  onLoadedMetadata={() => setLoaded(true)}
+                  onTimeUpdate={(event) => {
+                    const target = event.currentTarget;
+                    saveProgress(media.id, media.source, target.currentTime, target.duration);
+                  }}
+                  onEnded={() => removeProgress(media.id, media.source)}
+                />
+              ) : iframeUrl ? (
+                <div className="aspect-[16/9] w-full overflow-hidden rounded-[28px] bg-black">
+                  <iframe
+                    src={iframeUrl}
+                    title={media.title}
+                    className="h-full w-full"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                <div className="flex h-[420px] items-center justify-center rounded-[28px] bg-[#0b1220] text-center text-sm text-muted">
+                  Tidak ada pemutaran media yang tersedia untuk konten ini.
+                </div>
+              )}
             </section>
           </div>
 
@@ -111,8 +193,7 @@ function TontoninDongWatch() {
                   <span className="font-semibold text-white">Year:</span> {media.year}
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Rating:</span> {media.rating}
-                </p>
+                  <span className="font-semibold text-white">Rating:</span> {media.rating}</p>
                 <p>
                   <span className="font-semibold text-white">Status:</span> {media.status}
                 </p>

@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Play, Sparkles } from 'lucide-react';
-import { mediaItems } from '../../data/tontoninDong';
+import { Heart, Sparkles } from 'lucide-react';
 import { useContinueWatching } from '../../hooks/useContinueWatching';
 import { useMediaWatchlist } from '../../hooks/useMediaWatchlist';
 import TontoninDongNavbar from './TontoninDongNavbar';
+import type { MediaItem } from '../../types/media';
+import { getLatestAnime, getTrendingMovies, searchAnime, searchMovies } from '../../lib/tontoninDongApi';
+import { mediaItems as fallbackMediaItems } from '../../data/tontoninDong';
 
 const modes = ['All', 'Anime', 'Movie', 'TV'] as const;
 
@@ -13,37 +15,103 @@ type Mode = (typeof modes)[number];
 function TontoninDong() {
   const [mode, setMode] = useState<Mode>('All');
   const [search, setSearch] = useState('');
+  const [items, setItems] = useState<MediaItem[]>([]);
+  const [latestAnime, setLatestAnime] = useState<MediaItem[]>([]);
+  const [movieProjects, setMovieProjects] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { watchlist, toggleWatchlist, isInWatchlist } = useMediaWatchlist();
   const { progressList } = useContinueWatching();
 
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [animeData, movieData] = await Promise.all([getLatestAnime(), getTrendingMovies()]);
+        const normalizedAnime = animeData.map((item) => ({ ...item, source: 'otakudesu' as const }));
+        const normalizedMovies = movieData.map((item) => ({ ...item, source: 'moviebox' as const }));
+
+        setLatestAnime(normalizedAnime.slice(0, 6));
+        setMovieProjects(normalizedMovies.slice(0, 6));
+        setItems([...normalizedAnime, ...normalizedMovies]);
+      } catch (err) {
+        setError(
+          'API belum aktif atau endpoint belum sesuai. Pastikan API berjalan di localhost:8000 atau env production sudah diatur.'
+        );
+        setItems(fallbackMediaItems.map((item) => ({ ...item, source: 'moviebox' } as MediaItem)));
+        setLatestAnime(fallbackMediaItems.filter((item) => item.type === 'anime').slice(0, 6));
+        setMovieProjects(fallbackMediaItems.filter((item) => item.type !== 'anime').slice(0, 6));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    async function searchData() {
+      if (!search.trim()) {
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const queries: Promise<MediaItem[]>[] = [];
+
+        if (mode === 'All' || mode === 'Anime') {
+          queries.push(searchAnime(search).then((list) => list.map((item) => ({ ...item, source: 'otakudesu' } as MediaItem))));
+        }
+
+        if (mode === 'All' || mode === 'Movie' || mode === 'TV') {
+          queries.push(searchMovies(search).then((list) => list.map((item) => ({ ...item, source: 'moviebox' } as MediaItem))));
+        }
+
+        const results = await Promise.all(queries);
+        setItems(results.flat());
+      } catch (err) {
+        setError(
+          'Search API gagal. Pastikan API berjalan di localhost:8000 atau endpoint belum sesuai.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const timeout = setTimeout(() => {
+      if (search.trim()) {
+        void searchData();
+      }
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [search, mode]);
+
   const filteredItems = useMemo(() => {
-    return mediaItems.filter((item) => {
+    return items.filter((item) => {
       const typeMatch = mode === 'All' || item.type === mode.toLowerCase();
-      const searchMatch = [item.title, ...(item.genre ?? [])].some((value) =>
+      const searchMatch = [item.title, ...item.genre].some((value) =>
         value.toLowerCase().includes(search.toLowerCase())
       );
       return typeMatch && searchMatch;
     });
-  }, [mode, search]);
+  }, [items, mode, search]);
 
   const top10Items = useMemo(() => {
-    return [...mediaItems].sort((a, b) => b.rating - a.rating).slice(0, 10);
-  }, []);
-
-  const latestAnime = useMemo(() => {
-    return mediaItems
-      .filter((item) => item.type === 'anime')
-      .sort((a, b) => b.year - a.year)
-      .slice(0, 6);
-  }, []);
-
-  const movieProjects = useMemo(() => {
-    return mediaItems.filter((item) => item.type !== 'anime').slice(0, 6);
-  }, []);
+    return [...filteredItems].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 10);
+  }, [filteredItems]);
 
   const continueItems = progressList
-    .map((progress) => mediaItems.find((item) => item.id === progress.mediaId))
-    .filter(Boolean) as typeof mediaItems;
+    .map((progress) => items.find((item) => item.id === progress.mediaId && item.source === progress.source))
+    .filter(Boolean) as MediaItem[];
+
+  const watchlistItems = watchlist
+    .map((watchId) => items.find((item) => item.id === watchId) ?? fallbackMediaItems.find((item) => item.id === watchId))
+    .filter(Boolean) as MediaItem[];
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white">
@@ -66,6 +134,8 @@ function TontoninDong() {
                 <p className="max-w-3xl leading-8 text-muted">
                   Website ini adalah prototype portfolio TontoninDong. Data menggunakan mock API dan video demo legal untuk keperluan eksplorasi UI, search, watchlist, dan player.
                 </p>
+                {loading && <p className="text-sm text-primary">Memuat katalog...</p>}
+                {error && <p className="text-sm text-red-400">{error}</p>}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl bg-[#111827] p-5">
@@ -74,7 +144,7 @@ function TontoninDong() {
                 </div>
                 <div className="rounded-3xl bg-[#111827] p-5">
                   <p className="text-sm uppercase tracking-[0.24em] text-muted">Data</p>
-                  <p className="mt-2 text-lg font-semibold text-white">{mediaItems.length} titles</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{items.length} titles</p>
                 </div>
               </div>
             </div>
@@ -103,7 +173,7 @@ function TontoninDong() {
           </div>
           <div className="mt-6 flex gap-4 overflow-x-auto pb-2">
             {top10Items.map((item, index) => (
-              <article key={item.id} className="min-w-[220px] rounded-[28px] border border-white/10 bg-[#111827]/95 p-4 shadow-glow">
+              <article key={`${item.source}-${item.id}`} className="min-w-[220px] rounded-[28px] border border-white/10 bg-[#111827]/95 p-4 shadow-glow">
                 <div className="relative overflow-hidden rounded-3xl">
                   <img src={item.poster} alt={item.title} className="h-56 w-full object-cover" />
                   <span className="absolute left-4 top-4 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-black">
@@ -112,7 +182,7 @@ function TontoninDong() {
                 </div>
                 <div className="mt-4 space-y-2">
                   <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-                  <p className="text-sm text-muted">Rating {item.rating}</p>
+                  <p className="text-sm text-muted">Rating {item.rating ?? 'N/A'}</p>
                   <div className="flex flex-wrap gap-2">
                     {item.genre.slice(0, 2).map((genre) => (
                       <span key={genre} className="rounded-full bg-white/10 px-3 py-1 text-[11px] uppercase text-muted">
@@ -121,7 +191,7 @@ function TontoninDong() {
                     ))}
                   </div>
                   <Link
-                    to={`/tontonin-dong/watch/${item.id}`}
+                    to={`/tontonin-dong/watch/${item.source}/${encodeURIComponent(item.id)}`}
                     className="inline-flex w-full items-center justify-center rounded-full bg-primary px-3 py-2 text-sm font-semibold text-black"
                   >
                     Watch
@@ -174,7 +244,7 @@ function TontoninDong() {
                       </div>
                     </div>
                     <Link
-                      to={`/tontonin-dong/watch/${item.id}`}
+                      to={`/tontonin-dong/watch/${item.source}/${encodeURIComponent(item.id)}`}
                       className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-primary px-3 py-2 text-sm font-semibold text-black"
                     >
                       Watch
@@ -189,7 +259,7 @@ function TontoninDong() {
             <div className="rounded-[32px] border border-white/10 bg-[#111827]/95 p-6 shadow-glow">
               <p className="text-sm uppercase tracking-[0.28em] text-accent">Release Schedule</p>
               <div className="mt-5 space-y-4">
-                {mediaItems.slice(0, 3).map((item) => (
+                {fallbackMediaItems.slice(0, 3).map((item) => (
                   <div key={item.id} className="rounded-3xl border border-white/10 bg-[#0d1725] p-4">
                     <p className="text-sm font-semibold text-white">{item.title}</p>
                     <p className="mt-1 text-sm text-muted">{item.releasedAt}</p>
@@ -249,7 +319,7 @@ function TontoninDong() {
                     </div>
                     <div className="mt-4 flex flex-wrap gap-3">
                       <Link
-                        to={`/tontonin-dong/watch/${item.id}`}
+                        to={`/tontonin-dong/watch/${item.source}/${encodeURIComponent(item.id)}`}
                         className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-black"
                       >
                         Watch
@@ -309,22 +379,19 @@ function TontoninDong() {
             </div>
             <div className="rounded-[32px] border border-white/10 bg-[#111827]/95 p-6 shadow-glow">
               <p className="text-sm uppercase tracking-[0.28em] text-accent">Watchlist</p>
-              {watchlist.length ? (
+              {watchlistItems.length ? (
                 <div className="mt-5 space-y-4">
-                  {watchlist
-                    .map((watchId) => mediaItems.find((item) => item.id === watchId))
-                    .filter(Boolean)
-                    .map((item) => (
-                      <div key={item!.id} className="rounded-3xl bg-[#0d1725] p-4">
-                        <div className="flex items-center gap-3">
-                          <img src={item!.poster} alt={item!.title} className="h-14 w-14 rounded-3xl object-cover" />
-                          <div>
-                            <p className="text-sm font-semibold text-white">{item!.title}</p>
-                            <p className="text-xs text-muted">{item!.genre.slice(0, 2).join(', ')}</p>
-                          </div>
+                  {watchlistItems.map((item) => (
+                    <div key={item.id} className="rounded-3xl bg-[#0d1725] p-4">
+                      <div className="flex items-center gap-3">
+                        <img src={item.poster} alt={item.title} className="h-14 w-14 rounded-3xl object-cover" />
+                        <div>
+                          <p className="text-sm font-semibold text-white">{item.title}</p>
+                          <p className="text-xs text-muted">{item.genre.slice(0, 2).join(', ')}</p>
                         </div>
                       </div>
-                    ))}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="mt-5 text-muted">Watchlist masih kosong.</p>
