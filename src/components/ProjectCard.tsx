@@ -8,6 +8,9 @@ interface ProjectCardProps {
 }
 
 function ProjectCard({ project }: ProjectCardProps) {
+  const hasLiveDemo = project.liveUrl && project.liveUrl !== '#';
+  const hasGithub = project.githubUrl && project.githubUrl !== '#';
+
   return (
     <motion.article
       whileHover={{ y: -6 }}
@@ -39,23 +42,43 @@ function ProjectCard({ project }: ProjectCardProps) {
             {project.status}
           </span>
           <div className="flex gap-2">
-            <a
-              href={project.demoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
-            >
-              Demo
-            </a>
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-9 items-center rounded-full border border-white/10 bg-[#08141f] px-3 text-xs font-semibold text-text hover:border-accent"
-            >
-              <Github size={14} className="mr-2" />
-              Code
-            </a>
+            {hasLiveDemo ? (
+              <a
+                href={project.liveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-primary px-3 text-xs font-semibold text-white hover:bg-[#0f77cf]"
+              >
+                Demo
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-[#26344f] px-3 text-xs font-semibold text-muted"
+              >
+                Coming Soon
+              </button>
+            )}
+            {hasGithub ? (
+              <a
+                href={project.githubUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-[#08141f] px-3 text-xs font-semibold text-text hover:border-accent"
+              >
+                <Github size={14} className="mr-2" />
+                Code
+              </a>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-9 items-center rounded-full border border-white/10 bg-[#26344f] px-3 text-xs font-semibold text-muted"
+              >
+                No Code
+              </button>
+            )}
           </div>
         </div>
         <Link

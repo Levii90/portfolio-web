@@ -1,4 +1,5 @@
 import { Award, BookOpen, Code2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 function About() {
   return (
@@ -42,7 +43,19 @@ function About() {
                 <p className="font-semibold text-text">Scalable portfolio structure</p>
                 <p className="mt-2 text-sm">Tambahkan project baru hanya lewat file data statis tanpa perlu backend atau database.</p>
               </li>
+              <li className="rounded-3xl border border-white/10 bg-[#07111f] p-5">
+                <p className="font-semibold text-text">Project spotlight: TontoninDong</p>
+                <p className="mt-2 text-sm">TontoninDong adalah konsep media catalog web app yang mengeksplorasi integrasi API open-source, watchlist lokal, continue watching, dan UI dark night-sky.</p>
+              </li>
             </ul>
+            <div className="mt-8">
+              <Link
+                to="/tontonin-dong"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f77cf]"
+              >
+                Lihat Project TontoninDong
+              </Link>
+            </div>
           </div>
         </div>
       </div>

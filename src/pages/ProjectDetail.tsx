@@ -66,22 +66,42 @@ function ProjectDetail() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <a
-                href={project.demoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f77cf]"
-              >
-                <ExternalLink size={16} /> Live Demo
-              </a>
-              <a
-                href={project.githubUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#09131b] px-5 py-3 text-sm font-semibold text-text hover:border-accent"
-              >
-                <Github size={16} /> GitHub
-              </a>
+              {project.liveUrl && project.liveUrl !== '#' ? (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-white hover:bg-[#0f77cf]"
+                >
+                  <ExternalLink size={16} /> Live Demo
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-full bg-[#26344f] px-5 py-3 text-sm font-semibold text-muted"
+                >
+                  Coming Soon
+                </button>
+              )}
+              {project.githubUrl ? (
+                <a
+                  href={project.githubUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-[#09131b] px-5 py-3 text-sm font-semibold text-text hover:border-accent"
+                >
+                  <Github size={16} /> GitHub
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-full bg-[#26344f] px-5 py-3 text-sm font-semibold text-muted"
+                >
+                  No Code
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}

@@ -6,6 +6,7 @@ const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Projects', href: '/dashboard' },
+  { label: 'TontoninDong', href: '/tontonin-dong' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' }
 ];

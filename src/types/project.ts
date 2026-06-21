@@ -1,4 +1,4 @@
-export type ProjectStatus = 'Completed' | 'In Development' | 'Academic Project';
+export type ProjectStatus = 'Completed' | 'In Development' | 'Academic Project' | 'Concept Project';
 
 export interface Project {
   id: string;
@@ -10,7 +10,7 @@ export interface Project {
   tech: string[];
   features: string[];
   githubUrl: string;
-  demoUrl: string;
+  liveUrl: string;
   image: string;
   tags: string[];
 }

@@ -26,6 +26,12 @@ function Footer() {
               github.com/Levii90
             </a>
           </div>
+          <div className="flex items-center gap-3 text-sm text-muted">
+            <ExternalLink size={18} className="text-accent" />
+            <a href="/tontonin-dong" className="text-text hover:text-primary">
+              TontoninDong Showcase
+            </a>
+          </div>
         </div>
       </div>
       <div className="mx-auto mt-10 max-w-7xl px-4 text-center text-xs text-white/40">
